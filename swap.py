@@ -119,19 +119,3 @@ swap_txn_hash = w3.eth.send_raw_transaction(signed_swap_txn.rawTransaction)
 tx_receipt = w3.eth.wait_for_transaction_receipt(swap_txn_hash)
 
 print(tx_receipt)
-
-"""
-# Working with deployed Contracts
-simple_storage = w3.eth.contract(address=tx_receipt.contractAddress, abi=abi)
-print(f"Initial Stored Value {simple_storage.functions.retrieve().call()}")
-greeting_transaction = simple_storage.functions.store(15).buildTransaction(
-    {"chainId": chain_id, "from": my_address, "nonce": nonce + 1}
-)
-signed_greeting_txn = w3.eth.account.sign_transaction(
-    greeting_transaction, private_key=private_key
-)
-tx_greeting_hash = w3.eth.send_raw_transaction(signed_greeting_txn.rawTransaction)
-print("Updating stored Value...")
-tx_receipt = w3.eth.wait_for_transaction_receipt(tx_greeting_hash)
-
-print(simple_storage.functions.retrieve().call())"""
