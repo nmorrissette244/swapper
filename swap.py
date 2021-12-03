@@ -41,14 +41,10 @@ spender = "0xa5E0829CaCEd8fFDD4De3c43696c57F7D7A678ff"
 amount = 5000000
 
 private_key = os.getenv("PRIVATE_KEY")
-print(private_key)
 
 account = w3.eth.account.from_key(private_key)
 
-print(account.address)
-
 timestamp = datetime.datetime.now()
-print(timestamp)
 
 # First we have to approve USDC
 # Need approval transaction parameters to build txn
@@ -73,24 +69,34 @@ signed_approve_txn = w3.eth.account.sign_transaction(
 
 # Send TXN
 approve_txn_hash = w3.eth.send_raw_transaction(signed_approve_txn.rawTransaction)
-# tx_receipt = w3.eth.wait_for_transaction_receipt(approve_txn_hash)
+tx_receipt = w3.eth.wait_for_transaction_receipt(approve_txn_hash)
 
-count = 0
-# if tx_receipt is None and (count < 30):
-# time.sleep(1)
-# tx_receipt = w3.eth.getTransactionReceipt(txn_hash)
+print("USDC APPROVED")
 
+# Get a rate of exchange for USDC-USDT using QS getAmountsOut function
+amount_out = swap_contract.functions.getAmountsOut(
+    int(1000000),
+    [
+        "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
+        "0xc2132D05D31c914a87C6611C10748AEb04B58e8F",
+    ],
+).call()
 
-print("Approve happened")
-
+print("Should receive " + str(amount_out[1] / 1000000) + " USDT for 1 USDC")
 
 # Now we have approved USDC, we can swap
 # Need to create the swap transaction
-swap_build_params = {"chainId": chainID, "from": myAddress, "nonce": nonce}
+swap_build_params = {
+    "chainId": chainID,
+    "from": myAddress,
+    "nonce": nonce + 2,
+    "gasPrice": 40000000000,
+    "gas": 1000000,
+}
 
 txn_params = [
     1000000,
-    997788,
+    amount_out[1],
     [
         "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
         "0xc2132D05D31c914a87C6611C10748AEb04B58e8F",
@@ -101,7 +107,7 @@ txn_params = [
 
 swap = swap_contract.functions.swapExactTokensForTokens(
     1000000,
-    997000,
+    amount_out[1],
     [
         "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
         "0xc2132D05D31c914a87C6611C10748AEb04B58e8F",
